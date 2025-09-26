@@ -2,7 +2,19 @@ import streamlit as st
 import os
 import tempfile
 import time
-from typing import Optional
+
+# Safe imports with compatibility
+try:
+    from langchain_community.document_loaders import PyPDFLoader, TextLoader
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain_huggingface import HuggingFaceEmbeddings
+    from langchain_community.vectorstores import FAISS
+    from langchain.chains import RetrievalQA
+    from langchain_community.llms import HuggingFaceHub
+    IMPORT_SUCCESS = True
+except ImportError as e:
+    st.error(f"Import error: {e}")
+    IMPORT_SUCCESS = False
 
 # Configure page first
 st.set_page_config(
