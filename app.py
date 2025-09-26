@@ -57,9 +57,11 @@ def process_document(uploaded_file):
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)
 
-# Initialize session state
+# Initialize session state properly
 if "vector_store" not in st.session_state:
     st.session_state.vector_store = None
+if "llm" not in st.session_state:  # FIXED: Added llm initialization
+    st.session_state.llm = None
 if "processing_error" not in st.session_state:
     st.session_state.processing_error = ""
 
@@ -80,20 +82,23 @@ if uploaded_file:
                 if vector_store:
                     st.session_state.vector_store = vector_store
                     try:
+                        # FIXED: Properly initialize the LLM
                         st.session_state.llm = HuggingFaceHub(
                             repo_id="google/flan-t5-base",
-                            model_kwargs={"temperature": 0.1, "max_length": 512}
+                            model_kwargs={"temperature": 0.1, "max_length": 512},
+                            huggingfacehub_api_token=os.environ.get("HUGGINGFACEHUB_API_TOKEN", "")
                         )
                         st.success("✅ AI Ready! Ask questions below")
                         st.session_state.processing_error = ""
                     except Exception as e:
                         st.error(f"❌ AI model loading failed: {e}")
+                        st.session_state.llm = None
                 else:
                     st.error(f"❌ {status}")
                     st.session_state.processing_error = status
 
 # Q&A Interface
-if st.session_state.vector_store:
+if st.session_state.vector_store and st.session_state.llm:
     st.header("💬 Ask Questions")
     
     question = st.text_input("Your question about the document:")
@@ -102,7 +107,7 @@ if st.session_state.vector_store:
         with st.spinner("🤖 AI thinking..."):
             try:
                 qa_chain = RetrievalQA.from_chain_type(
-                    llm=st.session_state.llm,
+                    llm=st.session_state.llm,  # FIXED: Correct variable name
                     chain_type="stuff",
                     retriever=st.session_state.vector_store.as_retriever(search_kwargs={"k": 2})
                 )
@@ -113,6 +118,8 @@ if st.session_state.vector_store:
                 
             except Exception as e:
                 st.error(f"AI error: {str(e)}")
+elif st.session_state.vector_store and not st.session_state.llm:
+    st.warning("⚠️ AI model not loaded properly. Please re-upload the document.")
 
 # Test with sample document
 st.header("🧪 Test with Sample Content")
@@ -120,11 +127,12 @@ if st.button("Load Sample Document for Testing"):
     # Create a sample document in memory
     sample_text = """
     Artificial Intelligence (AI) is the simulation of human intelligence in machines. 
-    Machine Learning is a subset of AI that enables computers to learn from data.
-    Deep Learning uses neural networks with multiple layers.
-    Natural Language Processing (NLP) allows computers to understand human language.
+    The primary goal of AI is to create systems that can perform tasks that would normally require human intelligence.
+    Machine Learning is a subset of AI that enables computers to learn from data without being explicitly programmed.
+    Deep Learning uses neural networks with multiple layers to analyze complex patterns.
+    Natural Language Processing (NLP) allows computers to understand and generate human language.
     
-    Applications include chatbots, image recognition, and recommendation systems.
+    Applications include chatbots, image recognition, recommendation systems, and autonomous vehicles.
     Popular frameworks are TensorFlow, PyTorch, and LangChain.
     """
     
@@ -139,13 +147,16 @@ if st.button("Load Sample Document for Testing"):
     vector_store = Chroma.from_documents(chunks, embeddings)
     
     st.session_state.vector_store = vector_store
-    st.session_state.llm = HuggingFaceHub(
-        repo_id="google/flan-t5-base",
-        model_kwargs={"temperature": 0.1, "max_length": 512}
-    )
-    
-    st.success("✅ Sample AI document loaded! Try asking:")
-    st.code("What is Artificial Intelligence?\nWhat are AI applications?\nExplain Machine Learning")
+    try:
+        st.session_state.llm = HuggingFaceHub(
+            repo_id="google/flan-t5-base",
+            model_kwargs={"temperature": 0.1, "max_length": 512},
+            huggingfacehub_api_token=os.environ.get("HUGGINGFACEHUB_API_TOKEN", "")
+        )
+        st.success("✅ Sample AI document loaded! Try asking:")
+        st.code("What is Artificial Intelligence?\nWhat is the primary goal of AI?\nExplain Machine Learning")
+    except Exception as e:
+        st.error(f"Failed to load AI model: {e}")
 
 st.sidebar.markdown("""
 ### 🎯 Features
