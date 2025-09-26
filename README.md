@@ -1,20 +1,26 @@
 # Free Document Q&A Bot 🤖
 
-A completely free AI-powered document question-answering system built with Streamlit and Hugging Face models.
+A completely free, deployable AI-powered document question-answering system.
 
-## Features
-- ✅ **100% Free** - No OpenAI costs, uses Hugging Face models
-- 📚 **Multiple Formats** - PDF, TXT, DOCX support
+## 🚀 Live Demo
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-app.streamlit.app/)
+
+## ✨ Features
+- ✅ **100% Free** - No API costs, uses Hugging Face models
+- 📚 **Multi-format** - PDF, TXT, DOCX support
 - 🔍 **Smart Search** - FAISS vector similarity search
-- 🌐 **Web Ready** - Deploy on Streamlit Cloud
+- 🌐 **Instant Deployment** - Ready for Streamlit Cloud
 - 💬 **Chat Interface** - Interactive Q&A experience
 
-## Live Demo
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-app-name.streamlit.app/)
+## 🛠️ Installation
 
-## Local Installation
-
-1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/document-qa-bot.git
+# Clone repository
+git clone https://github.com/bilaiali2010/document-qa-bot.git
 cd document-qa-bot
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run locally
+streamlit run app.py
