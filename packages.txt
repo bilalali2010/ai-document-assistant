@@ -1,4 +1,0 @@
-
-libgcc-ng
-libstdc++-ng
-build-essential
